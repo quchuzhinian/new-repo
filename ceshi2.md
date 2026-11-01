@@ -109,3 +109,24 @@ for i in range(len(cipher)):
     else:  
         cipher[i] = chr(temp + 128)  
 #### [MoeCTF 2022]ezTea
+下载后发现一个main.c文件，打开发现是最基本的TEA函数，没有发现任何变种，根据dexrypt对应写decrypt，这里sum和delta我搞晕了很久  
+解密: 
+void decrypt (uint32_t* v, uint32_t* k) {     
+	uint32_t delta = 0xd33b470;                      
+    uint32_t v0 = v[0], v1 = v[1], sum=delta*32;  
+    for (int i = 0; i < 32; i++) {  
+        v1 -= ((v0<<4) + k[2]) ^ (v0 + sum) ^ ((v0>>5) + k[3]);  
+        v0 -= ((v1<<4) + k[0]) ^ (v1 + sum) ^ ((v1>>5) + k[1]);  
+        sum -= delta;  
+    }  
+    v[0] = v0;  
+    v[1] = v1;  
+}  
+其中main函数里有一行uint32_t v[2] = {*(uint32_t *)&input[i], *(uint32_t *)&input[i+4]};    
+大概意思是:字节数组里，**每4个字节拼成一个uint32_t**，**每8字节一组（v0,v1)**,所以如果想存储字节，密文的格式必须是uint8_t  
+不过直接把密文写入main函数。最后打印的是hex(十六进制),还需要一番转化才能成chr字符串形式
+#### [HNCTF 2022 WEEK3]What's 1n DLL?
+解包后发现一个.exe一个.dll，前一个文件发现没有壳，直接IDA代开，发现v4,enc，**但是Dll1.dll,ttt两个疑似是处理的函数却打不开**  
+查壳发现DL1.dll有upx壳，直接脱壳会报错，没办法，查了别人的题解发现使用**二进制编辑器打开**里面ASCII字段的值UPX被改为了UFO,改回UPX就可以了  
+使用IDA打开后，发现有个**ttt**，和之前打开的ttt疑似是对应的，点击发现确实存在函数，仔细看好像是**XTEA**,不过似乎有很多变化的地方，我仅能看出a1是密文的疑似指针,v9和v11应该是待操作的密文,v6是疑似加密完sum的值  
+其他的代码我都推不出来是如何和XTEA关联的，尝试无果后，没办法,又查了别人的题解脚本，不过我还没有彻底理解该脚本是如何实现对应的
