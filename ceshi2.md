@@ -168,7 +168,10 @@ print(f"下标：{res}")
 ### 做题过程
 #### [LitCTF 2023]程序和人有一个能跑就行了
 查壳，IDA打开，直接main函数反编译后，发现buf1还有一堆别的函数，在sub_4015A0函数发现循环密钥生成，而且周期为256，我想到rc4算法，主函数里的litctf应该就是kwy了  
-直接尝试，发现输出的是fake_flag，重新看main函数似乎也没有找到问题  重新在汇编窗口看汇编语言发现了问题  
+![](img/ScreenShot_2026-11-07_104257_010.png)
+![](img/ScreenShot_2026-11-07_105224_337.png)
+直接尝试，发现输出的是fake_flag，重新看main函数似乎也没有找到问题  重新在汇编窗口看汇编语言发现了问题
+![](img/ScreenShot_2026-11-07_110006_829.png)
 **buf1数组的窗口有lea eax, [esp+2ACh+Buf2],lea  eax, [esp+2ACh+Buf1]两条语句，buf2应该也写入eax了，但是主函数只有buf1，在汇编窗口找了半天，发现右侧居然有buf2的数组**  
 **把buf1的数据替换为buf2再试试，发现对了**  
 def rc4(data,key):  
@@ -192,48 +195,52 @@ key=b'litctf'
 print(rc4(ciphertext ,key))   
 在此之前我也试过动态调试，但是卡住了，debugview里主函数汇编窗口一直没有
 #### [GDOUCTF 2023]Tea
-IDA打开后试着从mian伪代码里的一大堆函数去寻找密钥，密文和加密方式  找到密文v8，密钥a1,观察加密函数发现和标准的xtea不一样  
+IDA打开后试着从mian伪代码里的一大堆函数去寻找密钥，密文和加密方式  找到密文v8，密钥a1,观察加密函数发现和标准的xtea不一样
+![](img/ScreenShot_2026-11-07_112215_849.png)
+![](img/ScreenShot_2026-11-07_112354_067.png)
+![](img/ScreenShot_2026-11-07_112924_743.png)
 **外层循环8次，内层32次，因为0x20=32，条件又是while ( v6 <= 0x20 )**  
 现在最关键的一步就是根据加密函数逆向写解密函数过程，需要注意**内层加和异或的顺序**，这里我花了不少时间才写好
+![](img/ScreenShot_2026-11-07_114404_156.png)
 接下来就是写主函数了，把密文和密钥代入到函数求解  
-#include<iostream>
-using namespace std;
-void decrypt(uint32_t* v,const uint32_t* key)
-{
-	const uint32_t DELTA=256256256;
-	for (int j=8;j>=0;j++)
-	{
-		uint32_t v4=j+1;
-		uint32_t v7=DELTA*(32+j);
-		for (int i=0;i<33;i++)
-		{
-			v[v4]-=((key[(v7>>11)&3]+v7)^(((v[j]<<4)^(v[j]>>5))+v[j]));
-			v[j]-=(((key[(v7&3)])+v7)^((((v[j]<<4)^(v[j]>>5))+v[v4]))^v7);
-			v7-=DELTA;
-		}
-	}
-}
-int main()
-{
-	uint32_t key[4]={2233,4455,6677,8899};
-    uint32_t v8[10];
-	v8[0] = 444599258;
-	v8[1] = -140107365;
-	v8[2] = 1226314200;
-	v8[3] = -234802392;
-	v8[4] = 359413339;
-	v8[5] = 1013885656;
-	v8[6] = -2066432216;
-	v8[7] = -249921817;
-	v8[8] = 856928850;
-	v8[9] = -576724359;
-	decrypt(v8,key);
-	for(int i=0;i<10;i++)
-	{
-		for(int j=3;j>=0;j--)
-		{
-			putchar((v8[i]>>(8*j)));
-		}
-	}
-	return 0;
+#include<iostream>  
+using namespace std;  
+void decrypt(uint32_t* v,const uint32_t* key)  
+{  
+	const uint32_t DELTA=256256256;  
+	for (int j=8;j>=0;j++)  
+	{  
+		uint32_t v4=j+1;  
+		uint32_t v7=DELTA*(32+j);  
+		for (int i=0;i<33;i++)  
+		{  
+			v[v4]-=((key[(v7>>11)&3]+v7)^(((v[j]<<4)^(v[j]>>5))+v[j]));  
+			v[j]-=(((key[(v7&3)])+v7)^((((v[j]<<4)^(v[j]>>5))+v[v4]))^v7);  
+			v7-=DELTA;  
+		}  
+	}  
+}  
+int main()  
+{  
+	uint32_t key[4]={2233,4455,6677,8899};  
+    uint32_t v8[10];  
+	v8[0] = 444599258;  
+	v8[1] = -140107365;  
+	v8[2] = 1226314200;  
+	v8[3] = -234802392;  
+	v8[4] = 359413339;  
+	v8[5] = 1013885656;  
+	v8[6] = -2066432216;  
+	v8[7] = -249921817;  
+	v8[8] = 856928850;  
+	v8[9] = -576724359;  
+	decrypt(v8,key);  
+	for(int i=0;i<10;i++)  
+	{  
+		for(int j=3;j>=0;j--)  
+		{  
+			putchar((v8[i]>>(8*j)));  
+		}  
+	}  
+	return 0;  
 }
