@@ -96,3 +96,64 @@ int main(void)
         printf("%c",a1[i]);  
     }  
 }
+#### [WUSTCTF 2020]level4
+IDA打开，反编译后发现left，right，node这些，好像考察的是二叉树，二叉树我已经忘记的差不多了，正好重新温习一遍  
+type1,type2两个函数疑似是遍历输出二叉树，还有一个字符串是二叉树处理的对象。没有其他信息了。
+重新查阅有关二叉树的资料，发现特征很明显  
+**前序的顺序是:根左右**  
+**中序的顺序是:左根右**  
+**后序的顺序是:左右根**  
+函数的putchar疑似是打印结点，也就是打印根，所以据此判断**type1是中序**，**type2是后序**。但是还不知道输出的结果  
+尝试运行文件发现报错，提示**指定的可执行文件不是此操作系统平台的有效应用程序**。发现不对劲，查壳发现这个文件是Linux文件而非windows  
+为了完整复现，花了很长时间新建虚拟机，在虚拟机里打开文件并执行它，**输出了type1，type2函数的内容**，已知中序遍历的输出，后序遍历的输出，求前序遍历的输出。  
+据此写解题代码  * left，* right是左子树，右子树的结点，inStart，int inEnd是中序遍历的起始，最大值，postStart，int postEnd是后序遍历的起始，最大值  
+if (inorder[i] == postorder[postEnd])是判断最终的根节点的位置，root->left，root->right就是构建左右子树  
+#include <stdio.h>  
+#include <stdlib.h>  
+#include <string.h>  
+struct TreeNode   
+{
+    char val;
+    struct TreeNode* left;  
+    struct TreeNode* right;  
+};
+struct TreeNode* buildTree(char* inorder, int inStart, int inEnd, char* postorder, int postStart, int postEnd)   
+{  
+    if (inStart > inEnd || postStart > postEnd)  
+    {  
+        return NULL;  
+    }  
+    struct TreeNode* root = (struct TreeNode*)malloc(sizeof(struct TreeNode));  
+    root->val = postorder[postEnd];  
+    int i;  
+    for (i = inStart; i <= inEnd; i++)  
+    {  
+        if (inorder[i] == postorder[postEnd])  
+        {  
+            break;  
+        }  
+    }  
+    root->left = buildTree(inorder, inStart, i - 1, postorder, postStart, postStart + i - inStart - 1);  
+    root->right = buildTree(inorder, i + 1, inEnd, postorder, postStart + i - inStart, postEnd - 1);  
+    return root;  
+}  
+void preOrder(struct TreeNode* root)   
+{  
+    if (!root)   
+    {  
+        return;  
+    }  
+    printf("%c", root->val);  
+    preOrder(root->left);  
+    preOrder(root->right);  
+}  
+int main()  
+{  
+    char inorderStr[] = "2f0t02T{hcsiI_SwA__r7Ee}";  
+    char postorderStr[] = "20f0Th{2tsIS_icArE}e7__w";  
+    int n = strlen(inorderStr);  
+    struct TreeNode* root = buildTree(inorderStr, 0, n - 1, postorderStr, 0, n - 1);  
+    printf("前序遍历: ");  
+    preOrder(root);  
+    return 0;  
+}  
