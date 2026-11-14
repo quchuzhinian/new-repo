@@ -1,4 +1,4 @@
-#### [GDOUCTF 2023]润！
+<img width="1920" height="1140" alt="ScreenShot_2026-11-14_172112_223" src="https://github.com/user-attachments/assets/8cbb5606-35e9-45a0-8242-465677dc3018" /><img width="1920" height="1140" alt="ScreenShot_2026-11-14_171531_689" src="https://github.com/user-attachments/assets/26061022-aecd-4db5-9ba8-9d06baddc0d0" /><img width="1920" height="1140" alt="ScreenShot_2026-11-14_171524_251" src="https://github.com/user-attachments/assets/4b21c7a0-a717-4bca-9676-252e1d8d0c6f" />#### [GDOUCTF 2023]润！
 查壳发现是有壳的，还让你尝试upx，直接尝试发现失败，于是想到核查壳的标志。使用**Imhex**工具查看标志字段被改了，**改回UPX字段**，再脱壳发现成功了。
 ![](img/ScreenShot_2026-11-14_143724_209.png)
 ![](img/ScreenShot_2026-11-14_143753_897.png)
@@ -30,11 +30,15 @@ for k in range(8):
 ![](img/ScreenShot_2026-11-14_150508_515.png)
 仔细想这个脚本好像也没那么难理解。输出数组后直接**手动走一遍三维迷宫，得到路径ssddssuuwwddndduuussdussasauudd**。这个手动的过程还是比较绕的
 #### [SWPUCTF 2024 秋季新生赛]动态调试
-IDA打开后发现有个函数是**rc4_init**，可以判定考的函数是Rc4,后面**rc4_crypt**函数点进去看，发现和标准是一样的，key点击也能查看到，关键是不知道密文是什么   
+IDA打开后发现有个函数是**rc4_init**，可以判定考的函数是Rc4,后面**rc4_crypt**函数点进去看，发现和标准是一样的，key点击也能查看到，关键是不知道密文是什么 
+![](img/ScreenShot_2026-11-14_154548_055.png)
 最后的判断条件是**v2[j] != v1[j]**，前面的函数表明v2是用户输入的，Rc4的对象也是v2，**能做密文的只能是v1**，但是Rc4操作对象不是v1  
 使用动态调试，在**rc4_crypt**下断点，尝试把v2的值修改为v1，运行后停在mov机器码处。发现**rdx, v2**这个机器码，**rdx寄存器应该存的就是v2的地址**  
+![](img/ScreenShot_2026-11-14_155701_730.png)
 之前先复制v1的地址，**把rdx的地址改成v1的**，再步步调试执行rc4_crypt，但是发现一直不对  
+![](img/ScreenShot_2026-11-14_160105_576.png)
 查了别人的题解，发现漏了一个关键信息是**r8d**，**该寄存器是存储密文的长度，而v1，v2长度并不一致，所以在修改时也必须修改长度**  
+![](img/ScreenShot_2026-11-14_160823_263.png)
 重新尝试，发现执行完rc4_crypt，v1的值已经改变，说明**v1被成功解密了**，把值chr变化就好了  
 res = [0x4E, 0x53, 0x53, 0x43, 0x54, 0x46, 0x7B, 0x30, 0x64, 0x36,  
        0x66, 0x39, 0x30, 0x61, 0x63, 0x2D, 0x34, 0x62, 0x35, 0x65,  
@@ -45,8 +49,50 @@ for i in res:
     print(chr(i), end='')
 #### [SWPUCTF 2022 新生赛]贪吃蛇
 IDA打开后，对main函数进行反编译，伪代码里有gameStartMenu，gameMainLoop，先分别查看一下两个函数，后一个函数应该是控制游戏进程，判断结果，输出结果等    
-查找了半天发现_t_flag疑似是待输出的内容，而前面的校验语句有点复杂。关键是如何通过动态调试跳过校验或者是修改逻辑  
+查找了半天发现_t_flag疑似是待输出的内容，而前面的校验语句有点复杂。关键是如何通过动态调试跳过校验或者是修改逻辑
+![](img/ScreenShot_2026-11-14_163131_960.png)
 先直接运行观察逻辑，发现jz short loc_401BF3的**跳转语句**，**左边是isflag的输出语句，右边是gameover的语句**，在**jz short loc_401BF3**处下断点，观察运行  
-运行直接让蛇死掉，发现程序**执行到jz short loc_401BF3停下了**，此时发现**闪烁的是右边的线段，说明前面的校验结果生效了**  
+![](img/ScreenShot_2026-11-14_164406_031.png)
+运行直接让蛇死掉，发现程序**执行到jz short loc_401BF3停下了**，此时发现**闪烁的是右边的线段，说明前面的校验结果生效了**
+![](img/ScreenShot_2026-11-14_165151_377.png)
 此时可以直接**修改ZF的值**来修改校验结果，此时的ZF为1(校验结果生效)，改成0，会发现**闪烁的是左边的线段，说明修改成功，校验结果已经不生效**。再点运行会输出flag  
+![](img/ScreenShot_2026-11-14_165201_885.png)
 **ZF本身是用于表示判断的结果，在断点处修改ZF等于说直接修改了前面的判断结果，使得程序原本的分支发生变化，执行的模块随之发生改变**
+#### [HNCTF 2022 WEEK3]Try2debugPlusPlus
+IDA打开，发现函数tea_encrypt，判断考察tea，打开该函数观察加密逻辑，发现其与标准一样，点enc发现有数组，应该对应的是密文
+![](img/ScreenShot_2026-11-14_171524_251.png)
+![](img/ScreenShot_2026-11-14_171531_689.png)
+现在不知道的信息是**密钥**，直接使用v6的四个数据，发现是错误的，发现main函数里的 内容似乎和密钥的输出有关,尝试动态调试  
+在**main**这里下断点，直接运行发现会退出，主要是**call exit**机器码使得程序退出，为了让退出指令无效，尝试**把该指令nop掉**再运行，发现还不行
+![](img/ScreenShot_2026-11-14_172112_223.png)
+**后面发现jz short loc_401848跳转语句也是无效的，需要把该指令也nop掉，把nop后的一些无效的db也一起nop掉才行**
+![](img/ScreenShot_2026-11-14_173731_207.png)
+最后处理完在运行，输出了Key:0x91,0x71,0x11,0xbb。这样条件就齐了，可以写对应过来解密的程序了。注意每两组密文进行解密，循环条件，循环次数，一定要写对  
+#include <stdio.h>  
+#include <string.h>  
+#include <stdint.h>  
+int main(void)  
+{  
+    unsigned int a1[]={0x0DAD5B6C5, 0x0CE5F717, 0x8BE8AF6B, 0x0D74C6EB4, 0x0EEB8B5A0, 0x0A07618E0, 0x1B425FD0, 0x0C0B77641, 0x0A30FA9BE,0x0CB4F5089, 0x0EBF9EC1D, 0x0F870EF3D};  
+    int a2[] = {0x91,0x71,0x11,0xbb};  
+    unsigned int v0,v1,i;  
+    for (int k = 0; k < 12; k += 2)  
+    {  
+        v0 = a1[k];  
+        v1 = a1[k + 1];  
+        long delta = 0x79B99E37;  
+        long sum = (32 * delta);  
+        for (i = 0; i <= 31; ++i)  
+        {  
+            v1 -= (((v0 * 16) ^ (v0 >> 5)) + v0) ^ (sum + a2[(sum >> 11 ) & 3]);  
+            sum -= delta;  
+            v0 -= (((v1 * 16) ^ (v1 >> 5)) + v1) ^ (sum + a2[(sum & 3)]);  
+        }  
+        a1[k] = v0;  
+        a1[k+1] = v1;  
+    }  
+    for (i = 0; i < 12; i++)  
+    {  
+        printf("%c",a1[i]);  
+    }  
+}
