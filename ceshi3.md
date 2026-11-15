@@ -1,4 +1,199 @@
-<img width="1920" height="1140" alt="ScreenShot_2026-11-14_172112_223" src="https://github.com/user-attachments/assets/8cbb5606-35e9-45a0-8242-465677dc3018" /><img width="1920" height="1140" alt="ScreenShot_2026-11-14_171531_689" src="https://github.com/user-attachments/assets/26061022-aecd-4db5-9ba8-9d06baddc0d0" /><img width="1920" height="1140" alt="ScreenShot_2026-11-14_171524_251" src="https://github.com/user-attachments/assets/4b21c7a0-a717-4bca-9676-252e1d8d0c6f" />#### [GDOUCTF 2023]润！
+### C语言
+在学习和做题过程中发现自己C语言很多地方尚未搞懂，重新回顾一下  
+#### 数据类型
+char：**字符**  
+short int:**小整数**  
+int：**普通整数**  
+long int：**大整数**  
+float：**单精度小数**  
+double:**双精度小数**  
+unsigned int **非负整数**  
+在之前写tea算法的时候经常会遇见uint32_t的数据类型，这里终点记录一下  
+uint32_t:**固定32位无符号整数，4字节，范围是0 ~ 0xFFFFFFFF**
+使用必须声明,**#include <stdint.h>**
+因为TEA算法执行的所有移位，模加法，模减法，异或操作，必须保证操作对象是**固定32bit**  
+根据uint32_t的范围，先实现把该类型负数转化为正数，必须执行:**&0xFFFFFFFF**操作  
+和它类似的数据类型有  
+uint8_t ：**8位无符号，1 字节，0~255**  
+uint16_t：**16位无符号，2 字节，0~65535**  
+uint64_t：**64位无符号，8 字节**  
+#### 常用语言，运算符，指针
+cout:是一种标准的输入输出流，表示**打印输出对象到控制台**，使用该语句必须声明，**#include<iostream>**，还要声明**coutusing namespace std;**  
+cout最后使用<< end1表示一次输出的结束
+cout << 内容是输出，对应的cin >> 变量是输入  
+strlen:**求字符串的长度，不包括换行符。**  
+strcpy:**字符串的复制，包括换行符。**，strcpy(a, b)表示把b拷贝到a，并且a被覆盖  
+strcmp:**字符串的比较, strcmp(a, b)**，表示比较a,b的长度，返回整数a>b，返回负数a<b，返回零a=b  
+strcat:**字符串的追加**，strcat(a,b)把b追加到a后面  
+这四个函数想使用，必须声明,**#include <string.h>**  
+举一个简单地例子  
+#include <iostream>  
+#include <string.h>  
+using namespace std;  
+int main()  
+{  
+    char a[50] = "hello";  
+    char b[] = "nihao";  
+    cout << "a长度：" << strlen(a) << endl;  
+    strcat(a, b);
+    cout << "拼接 a：" << a << endl;  
+    char c[50];  
+    strcpy(c, a);  
+    cout << "拷贝 c：" << c << endl;  
+    if(strcmp(a, c) == 0)  
+    {  
+        cout << "a 和 c 相等" << endl;  
+    }  
+    return 0;  
+}  
+输出 a长度：5  
+拼接 a：hellonihao  
+拷贝 c：hellonihao  
+a 和 c 相等  
+getchar():从标准输入读取字符  
+putchar():想控制台输入字符  
+这两个函数想用，必须声明,**#include <stdio.h>**  
+位运算符:是在**二进制**层面进行的运算  
+<<：**左移**,>>: **右移**  
+这里的左右移的操作对象都是**数据的二进制表示**，而不是本来的数据  
+&:**按位与，都是1才为1**  
+|:**按位或，有1就是1**  
+^:**按位异或，不同为1**  
+~:**按位取反，01互换**  
+举一个简单的例子  
+#include <iostream>  
+using namespace std;  
+int main()  
+{  
+    int a = 6;  
+    int b = 3;  
+    cout << "a & b = " << (a & b) << endl;  
+    cout << "a | b = " << (a | b) << endl;  
+    cout << "a ^ b = " << (a ^ b) << endl;  
+    cout << "a << 1 = " << (a << 1) << endl;  
+    cout << "a >> 1 = " << (a >> 1) << endl;  
+    cout << "~a = " << (~a) << endl;  
+    return 0;  
+}  
+输出:a & b = 2  
+a | b = 7  
+a ^ b = 5  
+a << 1 = 12  
+a >> 1 = 3  
+~a = -7  
+指针:**用于存放内存地址**
+&**用于取变量在内存中的地址**
+(**)**在定义的时候表示指针变量，在使用的时候表示解引用，表示读取地址**  
+举一个简单的例子  
+int a=1;  
+int *p=&a;  
+*p=100;  
+printf("%d",a);输出的a就是100而不是1  
+再举tea的例子  
+void encrypt(uint32_t* v, uint32_t* k) {  
+    uint32_t v0 = v[0], v1 = v[1], sum = 0, i;  
+    uint32_t delta = 0x114514;  
+    for (i = 0; i < 32; i++) {  
+        sum += delta;  
+        v0 += ((v1 << 4) + k[0]) ^ (v1 + sum) ^ ((v1 >> 5) + k[1]);  
+        v1 += ((v0 << 4) + k[2]) ^ (v0 + sum) ^ ((v0 >> 5) + k[3]);  
+    }  
+    v[0] = v0; v[1] = v1;  
+}  
+void decrypt(uint32_t* v, uint32_t* k){  
+    uint32_t v0 = v[0], v1 = v[1];  
+    uint32_t delta = 0x114514;  
+    uint32_t sum = delta * 32;  
+    for (int i = 0; i < 32; i++) {  
+        v1 -= ((v0 << 4) + k[2]) ^ (v0 + sum) ^ ((v0 >> 5) + k[3]);  
+        v0 -= ((v1 << 4) + k[0]) ^ (v1 + sum) ^ ((v1 >> 5) + k[1]);  
+        sum -= delta;  
+    }  
+    v[0] = v0; v[1] = v1;  
+}  
+定义的v,k都是**指针变量**。调用的是数组传参，而数组传参本质上就是传指针。
+**指针本身是可以运算的**，所以**v[0]、v[1] 等于 *(v+0)、*(v+1)**成立。指针的加减伴随着指针本身字节的变化
+而void类型指针又不一样
+void *p表示一种通用的指针p，它可以存放任意数据类型的地址，但是不能解引用，也不能参与指针的运算
+#### 算法
+RC4作为对称加密，语句基本和python差不多，关键是注意数据类型
+#include <stdio.h>  
+#include <string.h>  
+typedef unsigned char u8;  
+void rc4_init(u8 *S, const u8 *key, int keylen)  
+{  
+    int i, j = 0;  
+    u8 tmp;  
+    for (i = 0; i < 256; i++) S[i] = i;  
+    for (i = 0; i < 256; i++) {  
+        j = (j + S[i] + key[i % keylen]) % 256;  
+        tmp = S[i]; S[i] = S[j]; S[j] = tmp;  
+    }  
+}  
+void rc4_crypt(u8 *S, u8 *data, int len)  
+{  
+    int i = 0, j = 0, t;  
+    u8 tmp;  
+    for (int k = 0; k < len; k++) {  
+        i = (i + 1) % 256;  
+        j = (j + S[i]) % 256;  
+        tmp = S[i]; S[i] = S[j]; S[j] = tmp;  
+        t = (S[i] + S[j]) % 256;  
+        data[k] ^= S[t];  
+    }  
+}  
+int main()  
+{  
+    u8 S[256];  
+    u8 key[] = "rc4key";  
+    u8 data[] = "hello rc4";  
+    int len = strlen((char*)data);  
+    printf("%s\n", data);  
+    rc4_init(S, key, strlen((char*)key));  
+    rc4_crypt(S, data, len);  
+    for(int i=0;i<len;i++) printf("%02x ", data[i]);  
+    printf("\n");  
+    rc4_init(S, key, strlen((char*)key));  
+    rc4_crypt(S, data, len);  
+    printf("%s\n", data);  
+    return 0;  
+}
+RSA本身的写法和python不太一样,使用C语言必须提前安装GMP库，使用这个库的相关语句执行加解密
+#include <stdio.h>  
+#include <gmp.h>  
+void rsa_encrypt(mpz_t c, mpz_t m, mpz_t e, mpz_t n)  
+{  
+    mpz_powm(c, m, e, n);  
+}  
+void rsa_decrypt(mpz_t m, mpz_t c, mpz_t d, mpz_t n)  
+{  
+    mpz_powm(m, c, d, n);  
+}  
+int main()  
+{  
+    mpz_t p, q, n, phi, e, d, m, c, res;  
+    mpz_inits(p,q,n,phi,e,d,m,c,res,NULL);  
+    mpz_set_str(p, "61", 10);  
+    mpz_set_str(q, "53", 10);  
+    mpz_mul(n, p, q);  
+    mpz_sub_ui(p,p,1);  
+    mpz_sub_ui(q,q,1);  
+    mpz_mul(phi, p, q);  
+    mpz_set_ui(e, 17);  
+    mpz_invert(d, e, phi);  
+    printf("n = "); mpz_out_str(stdout,10,n); putchar('\n');  
+    printf("e = "); mpz_out_str(stdout,10,e); putchar('\n');  
+    printf("d = "); mpz_out_str(stdout,10,d); putchar('\n');  
+    mpz_set_ui(m, 65);   
+    rsa_encrypt(c, m, e, n);  
+    printf("cipher = "); mpz_out_str(stdout,10,c); putchar('\n');  
+    rsa_decrypt(res, c, d, n);  
+    printf("plain = "); mpz_out_str(stdout,10,res); putchar('\n');  
+    mpz_clears(p,q,n,phi,e,d,m,c,res,NULL);  
+    return 0;  
+}
+### 做题记录
+#### [GDOUCTF 2023]润！
 查壳发现是有壳的，还让你尝试upx，直接尝试发现失败，于是想到核查壳的标志。使用**Imhex**工具查看标志字段被改了，**改回UPX字段**，再脱壳发现成功了。
 ![](img/ScreenShot_2026-11-14_143724_209.png)
 ![](img/ScreenShot_2026-11-14_143753_897.png)
