@@ -40,6 +40,15 @@ F9直接运行，到断点位置会自动停下
 这种内存修改只对当前调试进程有效，如果退出程序重启，它就会还原  
 如果想把程序也修改了，需要Dump 里右键，Copy to executable All modifications，在新弹出的补丁窗口右键，Save file  
 ![](img/ScreenShot_2026-11-21_155143_672.png)
+举一道题做例子
+[HNCTF 2022 Week1]CrackMe
+首先需要定位到有关密文的函数
+使用智能搜索，查找到Congrals,u did it!!!的文本字符串，点击进去发现一个比较函数LstrcmpA，比较的string1,string2应该有一个就是待获取的密文  
+![](img/ScreenShot_2026-11-21_171323_231.png)
+在该函数位置下断点，运行时输入一个错误的序列号  
+卡在LstrcmpA后进行单步调试，留意string1,string2的变化
+运行到弹出报错时点确定，重新查看string1,string2，尝试string2发现密文符合
+![](img/ScreenShot_2026-11-21_171454_172.png)
 ### SMC,IDC 脚本
 SMC是代码自修改，也就是在执行之前先修改代码的内容，使原有的内存指令发生变化  
 具体的执行过程:
