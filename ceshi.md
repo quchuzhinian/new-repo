@@ -211,3 +211,21 @@ int __cdecl sub_41D000(char *Str)
     return sub_41114F("please try agin~", v2);
 }  
 根据伪代码内容应该是使用RC4算法，v17是密文，you_are_master是密钥，即可解密。
+### 虚拟环境的创建
+尝试创建python虚拟环境
+先做准备工作下载anaconda，conda应用程序，配置环境变量，激活anaconda powershell prompt终端，conda初始化
+创建新的环境，指定python版本号conda create -n myenv python=3.8 -y，myenv是虚拟环境的名字
+激活并进入该虚拟环境conda activate myenv，发现前面的base变为myenv，成功激活
+![](img/ScreenShot_2026-11-18_164938_197.png)
+在该环境下尝试安装一些三方库，尝试使用一些反编译工具 pip install requests，python pyinstxtractor.py Probe.exe
+![](img/ScreenShot_2026-11-18_172136_202.png)
+![](img/ScreenShot_2026-11-18_172521_376.png)
+退出虚拟环境 conda deactivate
+![](img/ScreenShot_2026-11-18_183225_164.png)
+查看已经安装的所有配置 conda list
+查看已经安装的所有虚拟环境 conda env list
+![](img/ScreenShot_2026-11-18_180355_013.png)
+再新建另外一个环境 conda create -n py311 python=3.11 -y
+![](img/ScreenShot_2026-11-18_183502_836.png)
+再尝试安装一些三方库，尝试使用一些反编译工具  pip install uncompyle6，pip install gmpy2
+删除刚才安装好的myenv虚拟环境  conda remove -n myenv --all -y
