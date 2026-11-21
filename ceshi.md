@@ -1,3 +1,45 @@
+### Ollydbg
+OllyDbg 是一个 32 位汇编级别的分析调试器，和IDA的区别是Ollydbg是动态调试器，用于专门查看寄存器，内存等。IDA主要是静态分析  
+在实际操作中，发现IDA的动态调试和Ollydbg的动态调试有很大区别  
+#### hello world程序测试  
+#include<stdio.h>  
+#include<string.h>  
+int main()  
+{  
+	printf("hello world!");  
+	return 0;  
+}  
+编译运行后，把.exe文件用Ollydbg打开  
+分析一下打开的图片，右上角是寄存器，右下角是栈，最左侧一栏是地址  
+左上角左上角第二列是机器码，第三列是汇编指令。左下角Dump 窗口是 地址 / 16 字节 HEX / ASCII 三列，第一列是地址  
+![](img/ScreenShot_2026-11-21_143511_496.png)
+先记住最简单的有关调试的快捷键  
+F2下断点	  
+F7单步执行(若遇到调用命令，将进入函数代码内部)  
+F8单步执行(若遇到调用命令，仅执行函数自身，不跟随进入)  
+F9直接运行，到断点位置会自动停下  
+设置断点也可以直接CTRl+G打开跟踪表达的对话框，写入地址，该地址对应的位置即为断点   
+可使用ALT +B按键查看已设置的断点  
+![](img/ScreenShot_2026-11-21_145818_856.png)
+查找字符串的步骤  
+在 CPU 反汇编窗口右键 → Search for → All referenced text strings  
+在弹出字符串列表窗口右键 → Search for text，输入文字  找到之后，复制十六进制地址  
+按Ctrl+G 查找，粘贴这个地址，就能找到这个字符串的内存位置  
+![](img/ScreenShot_2026-11-21_150106_007.png)
+修改字符串的步骤  
+在带有hello world注释的地址下断点，开启调试，在这里断下后单步运行，发现右下角栈出现了hello world ，写入了00405044，对应mov dword ptr [esp], 00405044 
+![](img/ScreenShot_2026-11-21_152303_849.png)
+在CPU的指令行选中hello world注释的地址，按下CTRL+E，发现待修改的地址不对  
+![](img/ScreenShot_2026-11-21_152645_839.png)
+这里Edit code at 0040141E，修改的是那几条指令的机器码，而不是字符串  
+正确的的做法应该是在右下角栈这一行右键Follow in Dump，进入dump窗口(位于左下角)，此时发现hex dump窗口里的十六进制字节对应了ASCII hello world  
+选中 13 个字节（68 65 6C 6C 6F 20 77 6F 72 6C 64 21 00），再按 Ctrl+E。这里 Edit data beginning from address: 00405044，才是正确的位置  
+![](img/ScreenShot_2026-11-21_153310_819.png)
+![](img/ScreenShot_2026-11-21_153404_340.png)
+修改ASCII值后，注释立刻变成 ASCII "hello never"。在CPU的指令行选中hello never，按F9 继续运行，发现CPU的控制台(位于下方)改成了hello never  
+这种内存修改只对当前调试进程有效，如果退出程序重启，它就会还原  
+如果想把程序也修改了，需要Dump 里右键，Copy to executable All modifications，在新弹出的补丁窗口右键，Save file  
+![](img/ScreenShot_2026-11-21_155143_672.png)
 ### SMC,IDC 脚本
 SMC是代码自修改，也就是在执行之前先修改代码的内容，使原有的内存指令发生变化  
 具体的执行过程:
