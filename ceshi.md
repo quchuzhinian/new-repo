@@ -1,5 +1,5 @@
 ### Ollydbg
-OllyDbg 是一个 32 位汇编级别的分析调试器，和IDA的区别是Ollydbg是动态调试器，用于专门查看寄存器，内存等。IDA主要是静态分析  
+OllyDbg 是一个 32 位汇编级别的分析调试器，和IDA的区别是Ollydbg是动态调试器，用于专门查看寄存器，内存等。IDA主要是静态分析    
 在实际操作中，发现IDA的动态调试和Ollydbg的动态调试有很大区别  
 hello world程序测试  
 #include<stdio.h>  
