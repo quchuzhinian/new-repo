@@ -1,7 +1,7 @@
 ### Ollydbg
 OllyDbg 是一个 32 位汇编级别的分析调试器，和IDA的区别是Ollydbg是动态调试器，用于专门查看寄存器，内存等。IDA主要是静态分析  
 在实际操作中，发现IDA的动态调试和Ollydbg的动态调试有很大区别  
-#### hello world程序测试  
+hello world程序测试  
 #include<stdio.h>  
 #include<string.h>  
 int main()  
@@ -40,8 +40,16 @@ F9直接运行，到断点位置会自动停下
 这种内存修改只对当前调试进程有效，如果退出程序重启，它就会还原  
 如果想把程序也修改了，需要Dump 里右键，Copy to executable All modifications，在新弹出的补丁窗口右键，Save file  
 ![](img/ScreenShot_2026-11-21_155143_672.png)
-举一道题做例子
-[HNCTF 2022 Week1]CrackMe
+举例子  
+#### [BJDCTF 2020]Easy
+先用IDA打开，先反编译main函数没发现什么有用的信息，尝试反编译gues函数发现这个函数可能是有用的，但是main函数并没有调用。先把这个函数的地址记下来0x00401520  
+在IDA view里找存在分支或者跳转的句子，发现存在机器码call system分支，可以考虑直接patch这个机器码
+查缺资料，32位call rel的地址=目标地址-call的地址-5
+0x00401520-0x00401768-5=0xFFFFFDAD
+小端序是AD FD FF FF，这是4字节的偏移，头字节必须是E8  
+选中该指令的地址，点击file patch program change byte把原来的前五个字节更改为E8 AD FD FF FF，直接运行程序，并没有出现弹窗  
+尝试用ollydbg打开文件，并重试刚才所有的操作，发现成功了，出现了弹窗，这里我也不清楚是为什么
+#### [HNCTF 2022 Week1]CrackMe
 首先需要定位到有关密文的函数
 使用智能搜索，查找到Congrals,u did it!!!的文本字符串，点击进去发现一个比较函数LstrcmpA，比较的string1,string2应该有一个就是待获取的密文  
 ![](img/ScreenShot_2026-11-21_171323_231.png)
@@ -99,7 +107,7 @@ static main()
     auto END   = 0x401078;
     NopRange(START, END);
 }
-这里拿一些经典题目作为SMC的实例  
+举例子   
 #### [网鼎杯 2020 青龙组]jocker
 打开后首先发现有红色报错，提示sp-anaysis-failed。F5也有红色报错。sp表示栈偏移，只有call指令的esp变化能和ida的计算结果对应上，(sp的偏移量前后对应)栈才能处于平衡状态  
 ![](img/ScreenShot_2026-11-20_191609_633.png)
@@ -222,19 +230,19 @@ int __cdecl sub_41D000(char *Str)
 根据伪代码内容应该是使用RC4算法，v17是密文，you_are_master是密钥，即可解密。
 ### 虚拟环境的创建
 尝试创建python虚拟环境
-先做准备工作下载anaconda，conda应用程序，配置环境变量，激活anaconda powershell prompt终端，conda初始化
-创建新的环境，指定python版本号conda create -n myenv python=3.8 -y，myenv是虚拟环境的名字
-激活并进入该虚拟环境conda activate myenv，发现前面的base变为myenv，成功激活
+先做准备工作下载anaconda，conda应用程序，配置环境变量，激活anaconda powershell prompt终端，conda初始化  
+创建新的环境，指定python版本号conda create -n myenv python=3.8 -y，myenv是虚拟环境的名字  
+激活并进入该虚拟环境conda activate myenv，发现前面的base变为myenv，成功激活  
 ![](img/ScreenShot_2026-11-18_164938_197.png)
-在该环境下尝试安装一些三方库，尝试使用一些反编译工具 pip install requests，python pyinstxtractor.py Probe.exe
+在该环境下尝试安装一些三方库，尝试使用一些反编译工具 pip install requests，python pyinstxtractor.py Probe.exe  
 ![](img/ScreenShot_2026-11-18_172136_202.png)
 ![](img/ScreenShot_2026-11-18_172521_376.png)
-退出虚拟环境 conda deactivate
+退出虚拟环境 conda deactivate  
 ![](img/ScreenShot_2026-11-18_183225_164.png)
-查看已经安装的所有配置 conda list
-查看已经安装的所有虚拟环境 conda env list
+查看已经安装的所有配置 conda list  
+查看已经安装的所有虚拟环境 conda env list  
 ![](img/ScreenShot_2026-11-18_180355_013.png)
-再新建另外一个环境 conda create -n py311 python=3.11 -y
+再新建另外一个环境 conda create -n py311 python=3.11 -y  
 ![](img/ScreenShot_2026-11-18_183502_836.png)
-再尝试安装一些三方库，尝试使用一些反编译工具  pip install uncompyle6，pip install gmpy2
-删除刚才安装好的myenv虚拟环境  conda remove -n myenv --all -y
+再尝试安装一些三方库，尝试使用一些反编译工具  pip install uncompyle6，pip install gmpy2  
+删除刚才安装好的myenv虚拟环境  conda remove -n myenv --all -y  
