@@ -1,26 +1,27 @@
 ### JVM 字节码
-字节码是JAVA虚拟机规定的指令集，这种二进制指令是java源码编译得到的，不是原生CPU的X86机器码
-字节码指令是在栈上执行操作，大部分指令不从寄存器，而是从栈顶获取数据，处理后放回栈
-每一个字节opcode的含义是规定好的，这里拿一段java代码举例
-public class yanshi {
-    public static int sum(int n) {
-        int s = 0;
-        int i = 1;
-        while (i <= n) {
-            s = s + i;
-            i = i + 1;
-        }
-        return s;
-    }
-    public static void main(String[] args) {
-        int ans = sum(10);
-        if (ans > 40) {
-            System.out.println("大于40");
-        } else {
-            System.out.println("小于等于40");
-        }
-    }
-}
+字节码是JAVA虚拟机规定的指令集，这种二进制指令是java源码编译得到的，不是原生CPU的X86机器码  
+字节码是基于栈的：运算指令从操作数栈顶弹出操作数、结果压回栈  
+每一个字节opcode的含义是规定好的，这里拿一段java代码举例    
+.java文件名必须与 public 类名一致    
+public class ceshi {  
+    public static int sum(int n) {  
+        int s = 0;  
+        int i = 1;  
+        while (i <= n) {  
+            s = s + i;  
+            i = i + 1;  
+        }  
+        return s;  
+    }  
+    public static void main(String[] args) {  
+        int ans = sum(10);  
+        if (ans > 40) {  
+            System.out.println("大于40");  
+        } else {  
+            System.out.println("小于等于40");  
+        }  
+    }  
+}  
 保存为.java文件后，先编译javac ceshi.java，得到ceshi.class编译文件，再反汇编javap -c ceshi.class，在终端成功看到了输出结果
 ![](img/ScreenShot_2026-11-28_150527_847.png)
 Compiled from "ceshi.java"
@@ -68,26 +69,25 @@ public class ceshi {
         31: return
 }
 分析每一处opcode操作码
-iconst 压栈
-istore 存储
-iload 加载int
-if_icmpgt比较 前大于后跳转
-iinc 自增
-goto 跳转
-ireturn 返回int
+iconst 压栈  
+istore 存储  
+iload 加载int  
+if_icmpgt比较 前>后跳转  
+goto 跳转  
+ireturn 返回int  
 bipush 入栈(单字节）
-if_icmple 比较 后大于前跳转
-ldc 加载常量
- invokevirtual 调用方法
-除此之外的常见opcode操作码
-irem int取模
-inegint取负
-new 新建对象
-getfield 获取实例字段
-putfield 设置实例字段
-instanceof 判断类型
-字节码对于数据类型的要求很高，不能混用数据类型
-
+if_icmple 比较 “前<=后跳转  
+ldc 加载常量  
+ invokevirtual 调用方法  
+除此之外的常见opcode操作码  
+irem int取模  
+ineg int 取负  
+iinc 自增  
+new 新建对象  
+getfield 获取实例字段  
+putfield 设置实例字段  
+instanceof 判断类型  
+字节码对于数据类型的要求很高，不能混用数据类型  
 ### 解题记录
 #### [SWPUCTF 2025 秋季新生赛]ez_tea
 IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，发现有一个wrong，在IDAview里选中它选择交叉引用(Ctrl+X)找到对应的函数
@@ -96,13 +96,13 @@ IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，�
 ![](img/ScreenShot_2026-11-27_170232_441.png)
 找到这个函数后，还是Ctrl+X交叉引用寻找调用调它的函数，在对应函数里找有关退出的机器指令，一共三处，把这三处指令全部nop掉
 ![](img/ScreenShot_2026-11-27_170446_438.png)
-再调试发现左侧函数栏函数的名字都发生了变化，说明程序运行成功了，还按照寻找关键字找函数的方法
+跑过反调试后，IDA 函数窗口里出现了之前没识别出的函数，说明程序已进入正常执行流程  
 sub_7EF658DC1483是主函数，里面的sub_7FF65BDC38B0函数是tea加密,还有一个独立的函数sub_7FF65BDC3320是字符偏移
 ![](img/ScreenShot_2026-11-27_174728_958.png)
 ![](img/ScreenShot_2026-11-27_174820_561.png)
 byte_7FF65BDD0000是密文，而密钥我怎么都找不到。看了别的题解才发现需要动态调试:
 ![](img/ScreenShot_2026-11-27_172733_787.png)
-在sub_7EF658DC1483主函数Ctrl+X交叉引用，选第二个函数，v6 = sub_7FF65BDC143D(a1: v5)下断点，跟踪v6的值,，调试页面的v6即为密钥
+在sub_7EF658DC1483主函数Ctrl+X交叉引用，选第二处交叉引用，v6 = sub_7FF65BDC143D(a1: v5)下断点，跟踪v6的值,调试页面的v6即为密钥
 据此进行tea解密和字符偏移，注意循环次数和字符偏移的执行顺序
 #include <stdio.h>  
 #include <stdint.h>  
@@ -150,7 +150,7 @@ int main()
         0x6B, 0xFF, 0x91, 0xB0, 0xF8, 0x0B, 0x0F, 0x7D  
     };  
     uint32_t key[4] = {0x36433331,0x45344537,0x33314534,0x32373137};  
-    uint8_t res[48] = {0};  
+    uint8_t res[49] = {0};  
     uint32_t tmp[2];  
     for (int i = 0; i < 48; i += 8)  
     {  
@@ -170,7 +170,7 @@ int main()
 ![](img/ScreenShot_2026-11-27_203033_427.png)  
 每一个操作码执行的操作对应一个函数，需要翻译每一步操作  
 0xf1 应该是mov操作，不同的分支执行不同的操作    
-![](main/img/ScreenShot_2026-11-27_203039_689.png)
+![](img/ScreenShot_2026-11-27_203039_689.png)
 0xf2 异或操作R0=R0^R1  
 ![](img/ScreenShot_2026-11-27_203056_028.png)
 0xf5 读取21长度的flag  
@@ -183,10 +183,10 @@ int main()
 0xf6 线性计算 R0=R2+2R1+3R0  
 ![](img/ScreenShot_2026-11-27_203143_278.png)
 现在需要写代码获取整个sub_CD1对应的字节码，这里借鉴了别人的题解  
-offset就是对应字节的位置，binascii.b2a_hex是转化为十六进制字符串，前面一段的意思就是读取0x2060到0x229e的所有数据  
+offset就是对应字节的位置，binascii.b2a_hex是转化为十六进制字符串，前面一段的意思就是读取0x2060到0x229e的所有数据 
+存在文件偏移，此处0x2060 对应 VA0x202060  
 arr存放字节码数组，result存放反汇编文本  
-import binascii  
-from pwn import *  
+import binascii   
 fd = open("C:/Users/15327/Desktop/addition_file/babyvm.exe", "rb")  
 arr = []  
 offset = 0x2060  
@@ -197,7 +197,7 @@ while offset <= 0x229e:
     offset += 1  
 result = ""  
 i = 0  
-while i < 575:  
+while i < len(arr):  
     if arr[i] == 0xf1:  
         if arr[i + 1] == 0xE1:  
             result += "{0} mov R0 flag[{1}]\n".format(i, arr[i + 2])  
@@ -231,9 +231,8 @@ while i < 575:
         i += 1  
     else:  
         i += 1  
-with open("D:babyvm.txt", "a+") as tr:  
-    tr.write(result)  
-    tr.close()  
+with open(r"D:\babyvm.txt", "w", encoding="utf-8") as f:
+    f.write(result)
 在D:babyvm.txt成功获取字节码  
 ![](img/ScreenShot_2026-11-27_203247_398.png)  
 解读字节码，这里有两段read flag，只有一段是和flag长度相符合的    
