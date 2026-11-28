@@ -1,3 +1,94 @@
+### JVM 字节码
+字节码是JAVA虚拟机规定的指令集，这种二进制指令是java源码编译得到的，不是原生CPU的X86机器码
+字节码指令是在栈上执行操作，大部分指令不从寄存器，而是从栈顶获取数据，处理后放回栈
+每一个字节opcode的含义是规定好的，这里拿一段java代码举例
+public class yanshi {
+    public static int sum(int n) {
+        int s = 0;
+        int i = 1;
+        while (i <= n) {
+            s = s + i;
+            i = i + 1;
+        }
+        return s;
+    }
+    public static void main(String[] args) {
+        int ans = sum(10);
+        if (ans > 40) {
+            System.out.println("大于40");
+        } else {
+            System.out.println("小于等于40");
+        }
+    }
+}
+保存为.java文件后，先编译javac ceshi.java，得到ceshi.class编译文件，再反汇编javap -c ceshi.class，在终端成功看到了输出结果
+![](img/ScreenShot_2026-11-28_150527_847.png)
+Compiled from "ceshi.java"
+public class ceshi {
+  public ceshi();
+    Code:
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+  public static int sum(int);
+    Code:
+         0: iconst_0
+         1: istore_1
+         2: iconst_1
+         3: istore_2
+         4: iload_2
+         5: iload_0
+         6: if_icmpgt     20
+         9: iload_1
+        10: iload_2
+        11: iadd
+        12: istore_1
+        13: iload_2
+        14: iconst_1
+        15: iadd
+        16: istore_2
+        17: goto          4
+        20: iload_1
+        21: ireturn
+  public static void main(java.lang.String[]);
+    Code:
+         0: bipush        10
+         2: invokestatic  #7                  // Method sum:(I)I
+         5: istore_1
+         6: iload_1
+         7: bipush        40
+         9: if_icmple     23
+        12: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
+        15: ldc           #19                 // String 大于40
+        17: invokevirtual #21                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        20: goto          31
+        23: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
+        26: ldc           #27                 // String 小于等于40
+        28: invokevirtual #21                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        31: return
+}
+分析每一处opcode操作码
+iconst 压栈
+istore 存储
+iload 加载int
+if_icmpgt比较 前大于后跳转
+iinc 自增
+goto 跳转
+ireturn 返回int
+bipush 入栈(单字节）
+if_icmple 比较 后大于前跳转
+ldc 加载常量
+ invokevirtual 调用方法
+除此之外的常见opcode操作码
+irem int取模
+inegint取负
+new 新建对象
+getfield 获取实例字段
+putfield 设置实例字段
+instanceof 判断类型
+字节码对于数据类型的要求很高，不能混用数据类型
+
+### 解题记录
 #### [SWPUCTF 2025 秋季新生赛]ez_tea
 IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，发现有一个wrong，在IDAview里选中它选择交叉引用(Ctrl+X)找到对应的函数
 ![](img/ScreenShot_2026-11-27_165641_962.png)
