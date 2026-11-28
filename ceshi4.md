@@ -187,6 +187,7 @@ instanceof 判断类型
             524 GET_ITER            
         >>  525 FOR_ITER                44 (to 572)
             528 STORE_NAME               6 (i)  前面已经设了tmp数组，且三次下标i并分别减1，2，3，这里表示最后三位向前移位
+![](img/ScreenShot_2026-11-28_213913_916.png)
 ### 解题记录
 #### [SWPUCTF 2025 秋季新生赛]ez_tea
 IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，发现有一个wrong，在IDAview里选中它选择交叉引用(Ctrl+X)找到对应的函数
