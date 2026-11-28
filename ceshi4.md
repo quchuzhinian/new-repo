@@ -151,6 +151,42 @@ getfield 获取实例字段
 putfield 设置实例字段  
 instanceof 判断类型  
 例子
+#### [广东强网杯 2021 个人组]goodpy
+打开附件后查看goodpy，发现是python字节码，其实字节码并没有想象中的复杂，重点看load和binary打头的字节码就好了，load一般是加载常量，binary一般是各种运算处理  
+ 23         269 LOAD_NAME               10 (ord)
+            272 LOAD_NAME                8 (tmp)
+            275 LOAD_NAME                6 (i)
+            278 BINARY_SUBSCR       
+            279 CALL_FUNCTION            1
+            282 LOAD_CONST              16 (9)
+            285 BINARY_SUBTRACT     这里是先ord再减去9
+ 26         316 LOAD_NAME                8 (tmp)
+            319 LOAD_NAME                6 (i)
+            322 BINARY_SUBSCR       
+            323 LOAD_CONST              17 (51)
+            326 BINARY_XOR   这里是与51进行异或
+ 29         357 LOAD_NAME                8 (tmp)
+            360 LOAD_NAME                6 (i)
+            363 BINARY_SUBSCR       
+            364 LOAD_CONST              18 (8)
+            367 BINARY_ADD          这里是加上8
+ 43         531 LOAD_NAME                6 (i)
+            534 LOAD_CONST              19 (7)
+            537 BINARY_MODULO       
+            538 LOAD_CONST               3 (1)
+            541 COMPARE_OP               2 (==)
+            562 BINARY_SUBSCR       
+            563 LOAD_CONST              20 (119)
+            566 INPLACE_XOR         这里是先判断下标模7是否等于1，如果不是就与119进行异或
+就这样把每一步执行的操作都分析出来就可以了，然后逆序操作还原，但还是不对
+借鉴别人的分析，发现漏分析了一处操作
+ 42         512 SETUP_LOOP              58 (to 573)
+            515 LOAD_NAME                4 (range)
+            518 LOAD_NAME                1 (a)
+            521 CALL_FUNCTION            1
+            524 GET_ITER            
+        >>  525 FOR_ITER                44 (to 572)
+            528 STORE_NAME               6 (i)  前面已经设了tmp数组，且三次下标i并分别减1，2，3，这里表示最后三位向前移位
 ### 解题记录
 #### [SWPUCTF 2025 秋季新生赛]ez_tea
 IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，发现有一个wrong，在IDAview里选中它选择交叉引用(Ctrl+X)找到对应的函数
