@@ -1,8 +1,71 @@
 ### JVM 字节码
-字节码是JAVA虚拟机规定的指令集，这种二进制指令是java源码编译得到的，不是原生CPU的X86机器码  
-字节码是基于栈的：运算指令从操作数栈顶弹出操作数、结果压回栈  
-每一个字节opcode的含义是规定好的，这里拿一段java代码举例    
-.java文件名必须与 public 类名一致    
+#### python
+不同版本的python字节码会有区别，这里拿一段java代码举例，这里输出的是**Python3.11**的字节码   
+import dis  
+def cal(n):  
+    total = 0  
+    i = 1  
+    while i <= n:  
+        if i % 2 == 0:  
+            total += i  
+        else:  
+            total -= i  
+        i += 1  
+    return total  
+if __name__ == "__main__":  
+    dis.dis(cal)  
+    raw = cal.__code__.co_code  
+vscode已经安装了python解释器，可以直接在控制台输出     
+  2           RESUME                   0  
+  3           LOAD_SMALL_INT           0  
+              STORE_FAST               1 (total)  
+  4           LOAD_SMALL_INT           1  
+              STORE_FAST               2 (i)  
+  5   L1:     LOAD_FAST_BORROW_LOAD_FAST_BORROW 32 (i, n)  
+              COMPARE_OP              58 (bool(<=))  
+              POP_JUMP_IF_FALSE       43 (to L4)  
+              NOT_TAKEN  
+  6           LOAD_FAST_BORROW         2 (i)  
+              LOAD_SMALL_INT           2  
+              BINARY_OP                6 (%)  
+              LOAD_SMALL_INT           0  
+              COMPARE_OP              88 (bool(==))  
+              POP_JUMP_IF_FALSE       10 (to L2)  
+              NOT_TAKEN  
+  7           LOAD_FAST_BORROW_LOAD_FAST_BORROW 18 (total, i)  
+              BINARY_OP               13 (+=)  
+              STORE_FAST               1 (total)  
+              JUMP_FORWARD             8 (to L3)  
+  9   L2:     LOAD_FAST_BORROW_LOAD_FAST_BORROW 18 (total, i)  
+              BINARY_OP               23 (-=)  
+              STORE_FAST               1 (total)  
+ 10   L3:     LOAD_FAST_BORROW         2 (i)  
+              LOAD_SMALL_INT           1  
+              BINARY_OP               13 (+=)  
+              STORE_FAST               2 (i)  
+              JUMP_BACKWARD           48 (to L1)  
+ 11   L4:     LOAD_FAST_BORROW         1 (total)  
+              RETURN_VALUE
+分析每一处opcode操作码  
+RESUME 函数调用入口
+LOAD_SMALL_INT 压入常量
+LOAD_FAST_BORROW 加载
+STORE_FAST 存储
+POP_JUMP_IF_FALSE 如果不满足，向前跳转
+BINARY_OP 执行计算(取模、+=、-=)
+JUMP_FORWARD 先前跳转
+JUMP_BACKWARD 向后跳转
+COMPARE_OP 比较
+除此之外的常见操作码
+COPY i 复制第i个元素压栈
+SWAP i 交换栈元素
+LOAD_ATTR 取对象属性
+STORE_ATTR 给对象属性赋值
+BUILD_LIST 创建列表
+BUILD_MAP 创建字典
+CHECK_EXC_MATCH except 异常匹配
+#### java 
+每一个字节opcode的含义是规定好的，这里拿一段java代码举例        
 public class ceshi {  
     public static int sum(int n) {  
         int s = 0;  
@@ -87,7 +150,7 @@ new 新建对象
 getfield 获取实例字段  
 putfield 设置实例字段  
 instanceof 判断类型  
-字节码对于数据类型的要求很高，不能混用数据类型  
+例子
 ### 解题记录
 #### [SWPUCTF 2025 秋季新生赛]ez_tea
 IDA打开后，似乎找不到函数的位置，先shift F12寻找关键字，发现有一个wrong，在IDAview里选中它选择交叉引用(Ctrl+X)找到对应的函数
